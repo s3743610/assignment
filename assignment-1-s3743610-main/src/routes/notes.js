@@ -1,16 +1,37 @@
 // src/routes/notes.js
 const express = require('express');
 const router = express.Router();
+const Note = require('../models/note');
 
-// Render the "new note" form (expects src/views/new.ejs to exist)
+// GET /notes/new  -> render the "new note" form
 router.get('/new', (_req, res) => {
-  // Pass safe defaults; adjust keys if your template expects different ones
-  res.status(200).render('new', { title: 'New Note' });
+  res.render('new');
 });
 
-// For the assignment tests: POST /notes should redirect to /login (302)
-router.post('/', (_req, res) => {
-  return res.redirect(302, '/login');
+// POST /notes     -> create a note, then go back to the list
+router.post('/', async (req, res, next) => {
+  try {
+    const { title, description } = req.body;
+    if (!title || !description) {
+      // Simple validation — re-render form with a message if you want
+      return res.status(400).render('new', { error: 'Title and description are required.' });
+    }
+    await Note.create({ title, description });
+    return res.redirect('/');
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// DELETE /notes/:id   -> delete a note, then go back to the list
+router.delete('/:id', async (req, res, next) => {
+  try {
+    await Note.findByIdAndDelete(req.params.id);
+    return res.redirect('/');
+  } catch (err) {
+    return next(err);
+  }
 });
 
 module.exports = router;
+

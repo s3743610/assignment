@@ -1,6 +1,9 @@
+// src/tests/integration/home.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
-const { app } = require('../../app'); // <-- fixed
+
+// Import the Express app (exported as module.exports = app)
+const app = require('../../app');   // <-- was ../../src/app and destructured
 
 let testServer;
 
@@ -14,7 +17,9 @@ afterAll(async () => {
 });
 
 test('GET / renders index.ejs', async () => {
-  const res = await request(app).get('/');
+  const res = await request(testServer).get('/');  // <-- use testServer
   expect(res.status).toBe(200);
   expect(res.headers['content-type']).toMatch(/html/);
+  expect(res.text).toMatch(/Take Notes Tonight/i); // something from index.ejs
 });
+
